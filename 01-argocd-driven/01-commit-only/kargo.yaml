@@ -4,12 +4,12 @@ metadata:
   name: kargo-demo-01
 spec:
   promotionPolicies:
-  - stage: test
-    autoPromotionEnabled: true
-  - stage: uat
-    autoPromotionEnabled: true
-  - stage: prod
-    autoPromotionEnabled: true
+    - stage: test
+      autoPromotionEnabled: true
+    - stage: uat
+      autoPromotionEnabled: true
+    - stage: prod
+      autoPromotionEnabled: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
@@ -18,10 +18,10 @@ metadata:
   namespace: kargo-demo-01
 spec:
   subscriptions:
-  - git:
-      repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
-      # Watch this branch instead of main. This is the "trunk" for this example.
-      branch: kustomize
+    - git:
+        repoURL: https://github.com/cyberslot/kargo-examples.git
+        # Watch this branch instead of main. This is the "trunk" for this example.
+        branch: kustomize
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: PromotionTask
@@ -30,17 +30,17 @@ metadata:
   namespace: kargo-demo-01
 spec:
   vars:
-  - name: gitRepo
-    value: https://github.com/<github-username>/kargo-demo-gitops.git
+    - name: gitRepo
+      value: https://github.com/cyberslot/kargo-examples.git
   steps:
-  - uses: argocd-update
-    config:
-      apps:
-      - name: ${{ ctx.project }}-${{ ctx.stage }}
-        sources:
-        - repoURL: ${{ vars.gitRepo }}
-          desiredRevision: ${{ commitFrom(vars.gitRepo).ID }}
-          updateTargetRevision: true
+    - uses: argocd-update
+      config:
+        apps:
+          - name: ${{ ctx.project }}-${{ ctx.stage }}
+            sources:
+              - repoURL: ${{ vars.gitRepo }}
+                desiredRevision: ${{ commitFrom(vars.gitRepo).ID }}
+                updateTargetRevision: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -49,19 +49,19 @@ metadata:
   namespace: kargo-demo-01
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      direct: true
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       steps:
-      - task:
-          name: promo-process
+        - task:
+            name: promo-process
   verification:
     analysisTemplates:
-    - name: kargo-demo
+      - name: kargo-demo
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -70,20 +70,20 @@ metadata:
   namespace: kargo-demo-01
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - test
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        stages:
+          - test
   promotionTemplate:
     spec:
       steps:
-      - task:
-          name: promo-process
+        - task:
+            name: promo-process
   verification:
     analysisTemplates:
-    - name: kargo-demo
+      - name: kargo-demo
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -92,20 +92,20 @@ metadata:
   namespace: kargo-demo-01
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - uat
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        stages:
+          - uat
   promotionTemplate:
     spec:
       steps:
-      - task:
-          name: promo-process
+        - task:
+            name: promo-process
   verification:
     analysisTemplates:
-    - name: kargo-demo
+      - name: kargo-demo
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
@@ -114,18 +114,18 @@ metadata:
   namespace: kargo-demo-01
 spec:
   metrics:
-  - name: test
-    provider:
-      job:
-        metadata:
-        spec:
-          backoffLimit: 1
-          template:
-            spec:
-              containers:
-              - name: test
-                image: alpine:latest
-                command:
-                - sleep
-                - "20"
-              restartPolicy: Never
+    - name: test
+      provider:
+        job:
+          metadata:
+          spec:
+            backoffLimit: 1
+            template:
+              spec:
+                containers:
+                  - name: test
+                    image: alpine:latest
+                    command:
+                      - sleep
+                      - "20"
+                restartPolicy: Never

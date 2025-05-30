@@ -5,11 +5,11 @@ metadata:
   namespace: argocd
 spec:
   generators:
-  - list:
-      elements:
-      - stage: test
-      - stage: uat
-      - stage: prod
+    - list:
+        elements:
+          - stage: test
+          - stage: uat
+          - stage: prod
   template:
     metadata:
       name: kargo-demo-01-{{stage}}
@@ -18,20 +18,19 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
-        # Kargo will update targetRevision to move new commits from main into
-        # each stage
+        repoURL: https://github.com/cyberslot/kargo-examples.git
+        # Kargo will update targetRevision to move new commits from main into each stage
         targetRevision: placeholder
         path: stages/{{stage}}
         kustomize:
           images:
-          - public.ecr.aws/nginx/nginx=public.ecr.aws/nginx/nginx:1.24.0
+            - public.ecr.aws/nginx/nginx=public.ecr.aws/nginx/nginx:1.28-alpine-slim
       destination:
         server: https://kubernetes.default.svc
         namespace: kargo-demo-01-{{stage}}
       syncPolicy:
         syncOptions:
-        - CreateNamespace=true
+          - CreateNamespace=true
   ignoreApplicationDifferences:
-  - jqPathExpressions:
-    - .spec.source.targetRevision
+    - jqPathExpressions:
+        - .spec.source.targetRevision
