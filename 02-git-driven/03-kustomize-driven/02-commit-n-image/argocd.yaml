@@ -5,11 +5,11 @@ metadata:
   namespace: argocd
 spec:
   generators:
-  - list:
-      elements:
-      - stage: test
-      - stage: uat
-      - stage: prod
+    - list:
+        elements:
+          - stage: test
+          - stage: uat
+          - stage: prod
   template:
     metadata:
       name: kargo-demo-13-{{stage}}
@@ -18,7 +18,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
+        repoURL: https://github.com/cyberslot/kargo-examples.git
         # Kargo will update this branch to move new commits from the kustomize
         # branch and/or new images into this stage
         targetRevision: 13/stage/{{stage}}
@@ -28,4 +28,4 @@ spec:
         namespace: kargo-demo-13-{{stage}}
       syncPolicy:
         syncOptions:
-        - CreateNamespace=true
+          - CreateNamespace=true

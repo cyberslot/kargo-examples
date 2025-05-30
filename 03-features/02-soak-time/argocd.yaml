@@ -5,11 +5,11 @@ metadata:
   namespace: argocd
 spec:
   generators:
-  - list:
-      elements:
-      - stage: test
-      - stage: uat
-      - stage: prod
+    - list:
+        elements:
+          - stage: test
+          - stage: uat
+          - stage: prod
   template:
     metadata:
       name: kargo-demo-16-{{stage}}
@@ -18,19 +18,19 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
+        repoURL: https://github.com/cyberslot/kargo-examples.git
         targetRevision: kustomize
         path: stages/{{stage}}
         kustomize:
           images:
-          # Kargo will update this value to move new images into each stage
-          - public.ecr.aws/nginx/nginx=public.ecr.aws/nginx/nginx:placeholder
+            # Kargo will update this value to move new images into each stage
+            - public.ecr.aws/nginx/nginx=public.ecr.aws/nginx/nginx:placeholder
       destination:
         server: https://kubernetes.default.svc
         namespace: kargo-demo-16-{{stage}}
       syncPolicy:
         syncOptions:
-        - CreateNamespace=true
+          - CreateNamespace=true
   ignoreApplicationDifferences:
-  - jqPathExpressions:
-    - .spec.source.kustomize.images
+    - jqPathExpressions:
+        - .spec.source.kustomize.images

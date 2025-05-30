@@ -4,10 +4,10 @@ metadata:
   name: kargo-demo-09
 spec:
   promotionPolicies:
-  - stage: test
-    autoPromotionEnabled: true
-  - stage: uat
-    autoPromotionEnabled: true
+    - stage: test
+      autoPromotionEnabled: true
+    - stage: uat
+      autoPromotionEnabled: true
 ---
 apiVersion: v1
 kind: Secret
@@ -18,8 +18,8 @@ metadata:
   labels:
     kargo.akuity.io/cred-type: git
 stringData:
-  repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
-  username: <github-username>
+  repoURL: https://github.com/cyberslot/kargo-examples.git
+  username: cyberslot
   password: <github-pat>
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -29,38 +29,38 @@ metadata:
   namespace: kargo-demo-09
 spec:
   vars:
-  - name: gitRepo
-  - name: targetBranch
-  - name: outPath
+    - name: gitRepo
+    - name: targetBranch
+    - name: outPath
   steps:
-  - uses: git-clone
-    config:
-      repoURL: ${{ vars.gitRepo }}
-      checkout:
-      - commit: ${{ commitFrom(vars.gitRepo).ID }}
-        path: ./src
-      - branch: ${{ vars.targetBranch }}
-        create: true
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitRepo }}
+        checkout:
+          - commit: ${{ commitFrom(vars.gitRepo).ID }}
+            path: ./src
+          - branch: ${{ vars.targetBranch }}
+            create: true
+            path: ${{ vars.outPath }}
+    - uses: git-clear
+      config:
         path: ${{ vars.outPath }}
-  - uses: git-clear
-    config:
-      path: ${{ vars.outPath }}
-  - uses: copy
-    config:
-      inPath: ./src/base
-      outPath: ${{ vars.outPath }}/base
-  - uses: copy
-    config:
-      inPath: ./src/stages/${{ ctx.stage }}
-      outPath: ${{ vars.outPath }}/stages/${{ ctx.stage }}
-  - uses: git-commit
-    as: commit
-    config:
-      path: ${{ vars.outPath }}
-      message: updated manifests copied from main
-  - uses: compose-output
-    config:
-      commit: ${{ task.outputs.commit.commit }}
+    - uses: copy
+      config:
+        inPath: ./src/base
+        outPath: ${{ vars.outPath }}/base
+    - uses: copy
+      config:
+        inPath: ./src/stages/${{ ctx.stage }}
+        outPath: ${{ vars.outPath }}/stages/${{ ctx.stage }}
+    - uses: git-commit
+      as: commit
+      config:
+        path: ${{ vars.outPath }}
+        message: updated manifests copied from main
+    - uses: compose-output
+      config:
+        commit: ${{ task.outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
@@ -69,10 +69,10 @@ metadata:
   namespace: kargo-demo-09
 spec:
   subscriptions:
-  - git:
-      repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
-      # Watch this branch instead of main. This is the "trunk" for this example.
-      branch: kustomize
+    - git:
+        repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
+        # Watch this branch instead of main. This is the "trunk" for this example.
+        branch: kustomize
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -81,37 +81,37 @@ metadata:
   namespace: kargo-demo-09
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      direct: true
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       vars:
-      - name: gitRepo
-        value: https://github.com/<github-username>/kargo-demo-gitops.git
-      - name: targetBranch
-        value: 09/stage/${{ ctx.stage }}
-      - name: outPath
-        value: ./out
+        - name: gitRepo
+          value: https://github.com/cyberslot/kargo-examples.git
+        - name: targetBranch
+          value: 09/stage/${{ ctx.stage }}
+        - name: outPath
+          value: ./out
       steps:
-      - task:
-          name: base-promo-process
-        as: base
-      - uses: git-push
-        config:
-          path: ${{ vars.outPath }}
-      - uses: argocd-update
-        config:
-          apps:
-          - name: ${{ ctx.project }}-${{ ctx.stage }}
-            sources:
-            - repoURL: ${{ vars.gitRepo }}
-              desiredRevision: ${{ outputs.base.commit }}
+        - task:
+            name: base-promo-process
+          as: base
+        - uses: git-push
+          config:
+            path: ${{ vars.outPath }}
+        - uses: argocd-update
+          config:
+            apps:
+              - name: ${{ ctx.project }}-${{ ctx.stage }}
+                sources:
+                  - repoURL: ${{ vars.gitRepo }}
+                    desiredRevision: ${{ outputs.base.commit }}
   verification:
     analysisTemplates:
-    - name: kargo-demo
+      - name: kargo-demo
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -120,35 +120,35 @@ metadata:
   namespace: kargo-demo-09
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - test
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        stages:
+          - test
   promotionTemplate:
     spec:
       vars:
-      - name: gitRepo
-        value: https://github.com/<github-username>/kargo-demo-gitops.git
-      - name: targetBranch
-        value: 09/stage/${{ ctx.stage }}
-      - name: outPath
-        value: ./out
+        - name: gitRepo
+          value: https://github.com/cyberslot/kargo-examples.git
+        - name: targetBranch
+          value: 09/stage/${{ ctx.stage }}
+        - name: outPath
+          value: ./out
       steps:
-      - task:
-          name: base-promo-process
-        as: base
-      - uses: git-push
-        config:
-          path: ${{ vars.outPath }}
-      - uses: argocd-update
-        config:
-          apps:
-          - name: ${{ ctx.project }}-${{ ctx.stage }}
-            sources:
-            - repoURL: ${{ vars.gitRepo }}
-              desiredRevision: ${{ outputs.base.commit }}
+        - task:
+            name: base-promo-process
+          as: base
+        - uses: git-push
+          config:
+            path: ${{ vars.outPath }}
+        - uses: argocd-update
+          config:
+            apps:
+              - name: ${{ ctx.project }}-${{ ctx.stage }}
+                sources:
+                  - repoURL: ${{ vars.gitRepo }}
+                    desiredRevision: ${{ outputs.base.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -157,51 +157,51 @@ metadata:
   namespace: kargo-demo-09
 spec:
   requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - uat
+    - origin:
+        kind: Warehouse
+        name: kargo-demo
+      sources:
+        stages:
+          - uat
   promotionTemplate:
     spec:
       vars:
-      - name: gitRepo
-        value: https://github.com/<github-username>/kargo-demo-gitops.git
-      - name: targetBranch
-        value: 09/stage/${{ ctx.stage }}
-      - name: outPath
-        value: ./out
+        - name: gitRepo
+          value: https://github.com/cyberslot/kargo-examples.git
+        - name: targetBranch
+          value: 09/stage/${{ ctx.stage }}
+        - name: outPath
+          value: ./out
       steps:
-      - task:
-          name: base-promo-process
-      - uses: git-push
-        as: push
-        config:
-          path: ${{ vars.outPath }}
-          generateTargetBranch: true
-      - uses: git-open-pr
-        as: open-pr
-        config:
-          repoURL: ${{ vars.gitRepo }}
-          createTargetBranch: true
-          sourceBranch: ${{ outputs.push.branch }}
-          targetBranch: ${{ vars.targetBranch }}
-      - uses: git-wait-for-pr
-        as: wait-for-pr
-        config:
-          repoURL: ${{ vars.gitRepo }}
-          prNumber: ${{ outputs['open-pr'].prNumber }}
-      - uses: argocd-update
-        config:
-          apps:
-          - name: ${{ ctx.project }}-${{ ctx.stage }}
-            sources:
-            - repoURL: ${{ vars.gitRepo }}
-              desiredRevision: ${{ outputs['wait-for-pr'].commit }}
+        - task:
+            name: base-promo-process
+        - uses: git-push
+          as: push
+          config:
+            path: ${{ vars.outPath }}
+            generateTargetBranch: true
+        - uses: git-open-pr
+          as: open-pr
+          config:
+            repoURL: ${{ vars.gitRepo }}
+            createTargetBranch: true
+            sourceBranch: ${{ outputs.push.branch }}
+            targetBranch: ${{ vars.targetBranch }}
+        - uses: git-wait-for-pr
+          as: wait-for-pr
+          config:
+            repoURL: ${{ vars.gitRepo }}
+            prNumber: ${{ outputs['open-pr'].prNumber }}
+        - uses: argocd-update
+          config:
+            apps:
+              - name: ${{ ctx.project }}-${{ ctx.stage }}
+                sources:
+                  - repoURL: ${{ vars.gitRepo }}
+                    desiredRevision: ${{ outputs['wait-for-pr'].commit }}
   verification:
     analysisTemplates:
-    - name: kargo-demo
+      - name: kargo-demo
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
@@ -210,18 +210,18 @@ metadata:
   namespace: kargo-demo-09
 spec:
   metrics:
-  - name: test
-    provider:
-      job:
-        metadata:
-        spec:
-          backoffLimit: 1
-          template:
-            spec:
-              containers:
-              - name: test
-                image: alpine:latest
-                command:
-                - sleep
-                - "20"
-              restartPolicy: Never
+    - name: test
+      provider:
+        job:
+          metadata:
+          spec:
+            backoffLimit: 1
+            template:
+              spec:
+                containers:
+                  - name: test
+                    image: alpine:latest
+                    command:
+                      - sleep
+                      - "20"
+                restartPolicy: Never
