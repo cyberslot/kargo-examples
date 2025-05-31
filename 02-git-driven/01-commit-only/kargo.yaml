@@ -18,8 +18,8 @@ metadata:
   labels:
     kargo.akuity.io/cred-type: git
 stringData:
-  repoURL: https://github.com/cyberslot/kargo-examples.git
-  username: cyberslot
+  repoURL: https://github.com/<github-username>/kargo-demo-gitops.git
+  username: <github-username>
   password: <github-pat>
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -90,7 +90,7 @@ spec:
     spec:
       vars:
         - name: gitRepo
-          value: https://github.com/cyberslot/kargo-examples.git
+          value: https://github.com/<github-username>/kargo-demo-gitops.git
         - name: targetBranch
           value: 09/stage/${{ ctx.stage }}
         - name: outPath
@@ -130,7 +130,7 @@ spec:
     spec:
       vars:
         - name: gitRepo
-          value: https://github.com/cyberslot/kargo-examples.git
+          value: https://github.com/<github-username>/kargo-demo-gitops.git
         - name: targetBranch
           value: 09/stage/${{ ctx.stage }}
         - name: outPath
@@ -167,7 +167,7 @@ spec:
     spec:
       vars:
         - name: gitRepo
-          value: https://github.com/cyberslot/kargo-examples.git
+          value: https://github.com/<github-username>/kargo-demo-gitops.git
         - name: targetBranch
           value: 09/stage/${{ ctx.stage }}
         - name: outPath
