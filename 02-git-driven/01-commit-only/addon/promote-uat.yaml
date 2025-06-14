@@ -1,8 +1,0 @@
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Promotion
-metadata:
-  name: uat-promotion-manual
-  namespace: kargo-demo-09
-spec:
-  stage: uat
-  freight: 571569b09025c5f5cd523e78c181a024258ccfe1
