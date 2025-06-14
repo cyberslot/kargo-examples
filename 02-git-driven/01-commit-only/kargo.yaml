@@ -25,20 +25,24 @@ spec:
     - stageSelector:
         name: uat
       autoPromotionEnabled: true
+    - stageSelector:
+        name: prod
+      autoPromotionEnabled: false
 ---
-# apiVersion: v1
-# kind: Secret
-# type: Opaque
-# metadata:
-#   name: manifests
-#   namespace: kargo-demo-09
-#   labels:
-#     kargo.akuity.io/cred-type: git
-# stringData:
-#   repoURL: https://github.com/cyberslot/kargo-demo-gitops.git
-#   username: cyberslot
-#   password: <github-pat>
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: manifests
+  namespace: kargo-demo-09
+  labels:
+    kargo.akuity.io/cred-type: git
+stringData:
+  repoURL: https://github.com/cyberslot/kargo-demo-gitops.git
+  username: cyberslot
+  password: <github-pat>
 
+---
 #######################################################################
 apiVersion: v1
 kind: ServiceAccount
@@ -47,52 +51,52 @@ metadata:
   namespace: kargo-demo-09
 
 ---
-apiVersion: external-secrets.io/v1
-kind: SecretStore
-metadata:
-  name: vault-backend
-  namespace: kargo-demo-09
-spec:
-  provider:
-    vault:
-      server: "http://vault.vault.svc.cluster.local:8200" # adjust to your Vault address
-      path: "secret"
-      version: "v2"
-      auth:
-        kubernetes:
-          mountPath: "kubernetes"
-          role: "kargo-demo-role"
-          serviceAccountRef:
-            name: "kargo-vault-sa"
+# apiVersion: external-secrets.io/v1
+# kind: SecretStore
+# metadata:
+#   name: vault-backend
+#   namespace: kargo-demo-09
+# spec:
+#   provider:
+#     vault:
+#       server: "http://vault.vault.svc.cluster.local:8200" # adjust to your Vault address
+#       path: "secret"
+#       version: "v2"
+#       auth:
+#         kubernetes:
+#           mountPath: "kubernetes"
+#           role: "kargo-demo-role"
+#           serviceAccountRef:
+#             name: "kargo-vault-sa"
 
----
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: manifests-external-secret
-  namespace: kargo-demo-09
-spec:
-  refreshInterval: 15s
-  secretStoreRef:
-    name: vault-backend
-    kind: SecretStore
-  target:
-    name: manifests
-    creationPolicy: Owner
-    template:
-      type: Opaque
-      metadata:
-        labels:
-          kargo.akuity.io/cred-type: git
-      data:
-        repoURL: "https://github.com/cyberslot/kargo-demo-gitops.git"
-        username: "cyberslot"
-        password: "{{ .PAT | toString }}"
-  data:
-    - secretKey: PAT
-      remoteRef:
-        key: PAT
-        property: value
+# ---
+# apiVersion: external-secrets.io/v1
+# kind: ExternalSecret
+# metadata:
+#   name: manifests-external-secret
+#   namespace: kargo-demo-09
+# spec:
+#   refreshInterval: 15s
+#   secretStoreRef:
+#     name: vault-backend
+#     kind: SecretStore
+#   target:
+#     name: manifests
+#     creationPolicy: Owner
+#     template:
+#       type: Opaque
+#       metadata:
+#         labels:
+#           kargo.akuity.io/cred-type: git
+#       data:
+#         repoURL: "https://github.com/cyberslot/kargo-demo-gitops.git"
+#         username: "cyberslot"
+#         password: "{{ .PAT | toString }}"
+#   data:
+#     - secretKey: PAT
+#       remoteRef:
+#         key: PAT
+#         property: value
 
 #######################################################################
 ---
@@ -277,25 +281,25 @@ spec:
     analysisTemplates:
       - name: kargo-demo
 ---
-# apiVersion: argoproj.io/v1alpha1
-# kind: AnalysisTemplate
-# metadata:
-#   name: kargo-demo
-#   namespace: kargo-demo-09
-# spec:
-#   metrics:
-#     - name: test
-#       provider:
-#         job:
-#           metadata:
-#           spec:
-#             backoffLimit: 1
-#             template:
-#               spec:
-#                 containers:
-#                   - name: test
-#                     image: alpine:latest
-#                     command:
-#                       - sleep
-#                       - "20"
-#                 restartPolicy: Never
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: kargo-demo
+  namespace: kargo-demo-09
+spec:
+  metrics:
+    - name: test
+      provider:
+        job:
+          metadata:
+          spec:
+            backoffLimit: 1
+            template:
+              spec:
+                containers:
+                  - name: test
+                    image: alpine:latest
+                    command:
+                      - sleep
+                      - "20"
+                restartPolicy: Never
